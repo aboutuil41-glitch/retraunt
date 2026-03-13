@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dishes</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
+        nav { background: #4f46e5; padding: 12px 24px; color: white; }
+        nav a { color: white; margin-right: 16px; text-decoration: none; }
+        nav button { background: transparent; border: 1px solid white; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; }
+        .container { max-width: 600px; margin: 32px auto; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; }
+        input, textarea, select { width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .add-btn { width: 100%; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; }
+        .add-btn:hover { background: #4338ca; }
+        ul { list-style: none; padding: 0; margin-top: 16px; }
+        li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .del-btn { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+        .del-btn:hover { background: #dc2626; }
+        small { color: #888; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="categories.html">Categories</a>
+        <a href="dishes.html">Dishes</a>
+        <button onclick="logout()">Logout</button>
+    </nav>
+    <div class="container">
+        <h2>Dishes</h2>
+        <input type="text" id="name" placeholder="Dish name">
+        <textarea id="description" placeholder="Description (optional)" rows="2"></textarea>
+        <input type="number" id="price" placeholder="Price" step="0.01">
+        <select id="category_id"></select>
+        <button class="add-btn" onclick="createDish()">Add Dish</button>
+        <ul id="list"></ul>
+    </div>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+        async function load() {
+            const [dishRes, catRes] = await Promise.all([
+                fetch('http://localhost:8000/api/dishes', { headers }),
+                fetch('http://localhost:8000/api/categories', { headers })
+            ]);
+            const dishes = await dishRes.json();
+            const categories = await catRes.json();
+
+            const select = document.getElementById('category_id');
+            select.innerHTML = '';
+            categories.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            });
+
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            dishes.forEach(d => {
+                list.innerHTML += `<li>
+                    <span>${d.name} <small>$${d.price} — ${d.category?.name ?? ''}</small></span>
+                    <button class="del-btn" onclick="deleteDish(${d.id})">Delete</button>
+                </li>`;
+            });
+        }
+
+        async function createDish() {
+            await fetch('http://localhost:8000/api/dishes', {
+                method: 'POST', headers,
+                body: JSON.stringify({
+                    name: document.getElementById('name').value,
+                    description: document.getElementById('description').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    category_id: parseInt(document.getElementById('category_id').value),
+                })
+            });
+            load();
+        }
+
+        async function deleteDish(id) {
+            await fetch('http://localhost:8000/api/dishes/' + id, { method: 'DELETE', headers });
+            load();
+        }
+
+        async function logout() {
+            await fetch('http://localhost:8000/api/logout', { method: 'POST', headers });
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        load();
+    </script>
+</body>
+</html>
