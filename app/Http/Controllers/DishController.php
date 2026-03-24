@@ -25,10 +25,12 @@ class DishController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'price'          => 'required|numeric|min:0',
+            'category_id'    => 'required|exists:categories,id',
+            'ingredient_ids' => 'nullable|array',
+            'ingredient_ids.*' => 'exists:ingredients,id',
         ]);
 
         $dish = Dish::create([
@@ -39,7 +41,11 @@ class DishController extends Controller
             'category_id' => $request->category_id,
         ]);
 
-        return response()->json($dish, 201);
+        if ($request->has('ingredient_ids')) {
+            $dish->ingredients()->sync($request->ingredient_ids);
+        }
+
+        return response()->json($dish->load('ingredients'), 201);
     }
 
     /**
@@ -56,19 +62,24 @@ class DishController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name'        => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'price'       => 'sometimes|required|numeric|min:0',
-            'category_id' => 'sometimes|required|exists:categories,id',
+            'name'             => 'sometimes|required|string|max:255',
+            'description'      => 'nullable|string',
+            'price'            => 'sometimes|required|numeric|min:0',
+            'category_id'      => 'sometimes|required|exists:categories,id',
+            'ingredient_ids'   => 'nullable|array',
+            'ingredient_ids.*' => 'exists:ingredients,id',
         ]);
 
         $dish = Dish::findOrFail($id);
-
         $this->authorize('update', $dish);
 
         $dish->update($request->only('name', 'description', 'price', 'category_id'));
 
-        return response()->json($dish);
+        if ($request->has('ingredient_ids')) {
+            $dish->ingredients()->sync($request->ingredient_ids);
+        }
+
+        return response()->json($dish->load('ingredients'));
     }
 
     /**

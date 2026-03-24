@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'dietary_tags',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'dietary_tags' => 'array'
         ];
     }
 
@@ -58,6 +60,12 @@ class User extends Authenticatable
         public function dishes(){
 
         return $this->hasMany(Dish::class);
+
+    }
+
+        public function recommendations(){
+
+        return $this->hasMany(Recommendations::class);
 
     }
 }

@@ -8,8 +8,10 @@ class Ingredient extends Model
 {
     protected $fillable = ['name', 'tags'];
 
+    protected $casts = ['tags' => 'array'];
+
     public function dishes()
     {
-        return $this->belongsToMany(Dish::class);
+        return $this->belongsToMany(Dish::class , 'dish_ingredients');
     }
 }

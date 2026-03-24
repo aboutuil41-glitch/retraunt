@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('recommendations', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->boolean('is_active')->default(true);
-            $table->string('color')->default('#FF5733');
+            $table->foreignId('dish_id')->constrained()->cascadeOnDelete();
+            $table->unsignedTinyInteger('score')->nullable();
+            $table->string('label')->nullable();
+            $table->text('warning_message')->nullable();
+            $table->enum('status', ['processing', 'ready'])->default('processing');
             $table->timestamps();
+            $table->unique(['user_id', 'dish_id']);
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('recommendations');
     }
 };

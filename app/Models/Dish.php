@@ -22,6 +22,13 @@ class Dish extends Model
 
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class);
+        return $this->belongsToMany(Ingredient::class, 'dish_ingredients');
     }
+
+    public function recommendations(){
+
+        return $this->hasMany(Recommendations::class);
+
+    }
+    
 }
