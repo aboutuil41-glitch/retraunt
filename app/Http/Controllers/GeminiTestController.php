@@ -20,24 +20,20 @@ class GeminiTestController extends Controller
     )]
     public function test()
     {
-        $apiKey = env('GEMINI_API_KEY');
 
-        $response = Http::post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
-            [
-                "contents" => [
-                    [
-                        "parts" => [
-                            ["text" => "Say hello like a cool AI"]
-                        ]
-                    ]
-                ]
-            ]
-        );
-
-        return $response->json();
     }
 
+
+
+
+
+
+
+
+
+
+
+    
     #[OA\Get(
         path: '/list-models',
         summary: 'List available Gemini models',

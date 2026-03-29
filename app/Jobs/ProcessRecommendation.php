@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Dish;
 use App\Models\Recommendations;
+use App\Models\User;
 use App\Services\AiService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -19,8 +20,10 @@ class ProcessRecommendation implements ShouldQueue
 
     public function handle(AiService $aiService): void
     {
+        
         $dish = Dish::with('ingredients')->findOrFail($this->dishId);
-        $user = config('auth.providers.users.model')::findOrFail($this->userId);
+        $user = User::findOrFail($this->userId);
+
 
         $result = $aiService->analyzeDish(
             $user->dietary_tags ?? [],
@@ -28,15 +31,15 @@ class ProcessRecommendation implements ShouldQueue
             $dish->ingredients->map(fn($i) => ['name' => $i->name, 'tags' => $i->tags])->toArray()
         );
 
-        $score = $result['score'];
-
+        
         Recommendations::where('user_id', $this->userId)
             ->where('dish_id', $this->dishId)
             ->update([
-                'score'           => $score,
-                'label'           => $score >= 80 ? 'Highly Recommended' : ($score >= 50 ? 'Recommended with notes' : 'Not Recommended'),
-                'warning_message' => $score < 50 ? ($result['warning_message'] ?? 'Not suitable for your diet.') : null,
+                'score'           => $result['score'],
+                'label'           => $result['score'] >= 80 ? 'Highly Recommended' : ($result['score'] >= 50 ? 'Recommended with notes' : 'Not Recommended'),
+                'warning_message' => $result['score'] < 50 ? ($result['warning_message'] ?? 'Not suitable for your diet.') : null,
                 'status'          => 'ready',
             ]);
+
     }
 }

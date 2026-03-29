@@ -40,10 +40,11 @@ class AiService
             throw new \RuntimeException('Invalid AI response: ' . $output);
         }
 
-        return [
-            'score'           => (int) $result['score'],
-            'warning_message' => $result['warning_message'] ?? null,
-        ];
+        // return [
+        //     'score'           => (int) $result['score'],
+        //     'warning_message' => $result['warning_message'] ?? null,
+        // ];
+        return $result;
     }
 
     private function buildPrompt(array $dietaryTags, string $dishName, array $ingredients): string
@@ -57,4 +58,5 @@ class AiService
             "Return ONLY valid JSON (no markdown, no explanation). Format exactly like this:\n" .
             "{\"score\": number, \"warning_message\": string|null}";
     }
+
 }

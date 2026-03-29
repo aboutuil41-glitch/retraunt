@@ -60,7 +60,7 @@ class RecommendationController extends Controller
             ]
         );
 
-        ProcessRecommendation::dispatch($user->id, $dish->id)->delay(now()->addMinutes(10));;
+        ProcessRecommendation::dispatch($user->id, $dish->id);
 
         return response()->json($recommendation, 202);
     }
